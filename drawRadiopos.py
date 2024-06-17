@@ -3,12 +3,9 @@ from matplotlib.colors import LightSource
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-label = 'Resnet_DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_rewardp_num2_delmin_2best'
-# label = 'Resnet_DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_num2_rewardpfinal'
-# label = 'Resnet_DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_rewardp_num2_delmin_3best'
-label2 = 'DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_rewardp_02211600final'
+label = 'Resnet_DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_rewardp'
+label2 = 'DDPG_funnyworld_v5_task13_epochs200_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_rewardp'
 label3 = 'task13_random_2d'
-
 label4 = 'DDPG_funnyworld_v5_task13_epochs1000_batchsize256_lra1e-06_lrc0.0001_gamma0.99_VAR2best'
 #1.读数据
 data = np.load('analyse/2d/'+label+'.npy')
@@ -27,8 +24,6 @@ rddpg2 = rddpg2.to_numpy()
 
 p = 'gym_examples/analyse/random/task13_random_2d_20240401cli_2.npy'
 data_clis = np.load('analyse/random/task13_random_2d_20240401cli_2.npy')
-# data_cli3 = data_clis[:,3,:]
-# np.savetxt('analyse/cli4_path.txt', data_cli3)
 radionum = data.shape[1]
 clinum = data_clis.shape[1]
 clis = data_clis
@@ -67,13 +62,13 @@ marker = ['*', 'o']
 # ax.add_patch(task2)
 # ax.add_patch(task3)
 # ax.add_patch(task4)
-plt.plot( compare_path[:,1],-compare_path[:,0], c=color['Center'], linestyle='solid', label = 'Center')  #绘制cluster的路径，中间一坨，但不知道线的走向
+plt.plot( compare_path[:,1],-compare_path[:,0], c=color['Center'], linestyle='solid', label = 'Center')  #绘制cluster的路径，中间一坨
 for j in range(clinum):
     clix = clis[:, j, 0]
     cliy = clis[:, j, 1]
     plt.plot( cliy,-clix, c=color['base'], linestyle='dashed', label='sensing paths')
 plt.plot(ddpg1[:,1], -ddpg1[:,0], color=color['DDPG'], label='DDPG')
-plt.plot(ddpg2[:,1]-3, -ddpg2[:,0], color=color['DDPG'], label='DDPG')
+plt.plot(ddpg2[:,1], -ddpg2[:,0], color=color['DDPG'], label='DDPG')
 plt.plot(rddpg1[:,1], -rddpg1[:,0], color=color['RDDPG'], label='RDDPG')
 plt.plot(rddpg2[:,1], -rddpg2[:,0], color=color['RDDPG'], label='RDDPG')
 
