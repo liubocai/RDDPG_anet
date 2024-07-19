@@ -86,6 +86,9 @@ def test(opt):
     # 3.要保存的数据
     radiopos = []
     clients_pos_array = []
+
+    # s_all = np.empty(shape=(1,14))
+    # a_all = np.empty(shape=(1,4))
     # 4.执行
     ep_reward = 0
     for j in range(task['maxstep']):
@@ -101,6 +104,8 @@ def test(opt):
             with torch.no_grad():
                 s = cnnmodel(torch.FloatTensor(s).unsqueeze(0).cuda()).cpu().numpy()
                 a = model.act(s)
+        # s_all = np.append(s_all, s, axis=0)
+        # a_all = np.append(a_all, a, axis=0)
         s_, r, done, _, info = env.step(a)
         s = s_
         ep_reward += r
@@ -113,22 +118,28 @@ def test(opt):
             scalar_dict['cli' + str(m + 1)] = cli2base[m]
         writer.add_scalars('rate/clients2base', scalar_dict, j)
     radiopos = np.array(radiopos)
+
     clients_pos_array = np.array(clients_pos_array)
     np.save(PROJECT_PATH + '/analyse/' + logpath + '/radios.npy', radiopos)
     np.save(PROJECT_PATH + '/analyse/' + logpath + '/cli.npy', clients_pos_array)
     print('ep_reward:', ep_reward)
+    # return logpath, s_all, a_all
     return logpath
 
 
 
 if __name__ == '__main__':
     #1.general env
-    opt = parse_opt(True, algorithm='RDDPG', modelname='RDDPG_1720715162final.pt',
-                   net='resnet18' )
-    # opt = parse_opt(True, algorithm='DDPG', modelname='DDPG_funnyworld_v5_task_epochs800_batchsize488_lra1e-06_lrc0.0001_gamma0.99_VAR3_memory2440_1720624264best.pt'
-    #                 , statetype='vector')
+    # opt = parse_opt(True, algorithm='RDDPG', modelname='RDDPG_1721226111final.pt', task='task21',
+    #                net='resnet18' )
+    opt = parse_opt(True, algorithm='DDPG', modelname='DDPG_1721269024final.pt'
+                    , statetype='vector', task = 'task21')
     # opt = parse_opt(True, algorithm='withoutRadio')
-    test(opt)
+    logpath , s_all, a_all = test(opt)
+    np.save('s_dp', s_all)
+    np.save('a_dp', a_all)
+    print(s_all)
+    print(a_all)
 
 
 

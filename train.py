@@ -1,6 +1,7 @@
 # from envs.funnyworld_cnn import GroundEnv
 import copy
 import importlib
+import random
 
 import torchvision
 from torch import nn
@@ -22,7 +23,7 @@ from common.replay_buffer import ReplayBuffer
 PROJECT_PATH = str(os.path.dirname(os.path.abspath(__file__))) #/home/inspur2/workspace/RDDPG
 
 
-def parse_opt(known=False, algorithm='RDDPG', epoch=200, lra=0.000001, statetype='image3c'):
+def parse_opt(known=False, algorithm='RDDPG', epoch=250, lra=0.000001, statetype='image3c', task='task21'):
     parser = argparse.ArgumentParser()
     ##############algorithm
     parser.add_argument('--algorithm', type=str, default=algorithm)
@@ -45,14 +46,17 @@ def parse_opt(known=False, algorithm='RDDPG', epoch=200, lra=0.000001, statetype
     parser.add_argument('--statetype', type=str, default=statetype)
     parser.add_argument('--pos_dim', type=int, default=2)
     ##############others
-    parser.add_argument('--task', type=str, default='task_test_model')
+    parser.add_argument('--task', type=str, default=task)
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--logdir', type=str, default='log')
     parser.add_argument('--modeldir', type=str, default='models')
     parser.add_argument('--device', default='cuda:0')
     return parser.parse_known_args()[0] if known else parser.parse_args()
 
+
 def train(opt):
+    np.random.seed(1)
+
     timestamp = str(int(time.time()))
     logpath = '_'.join([opt.algorithm, timestamp])
     writer = SummaryWriter('log/' + logpath)
@@ -72,7 +76,6 @@ def train(opt):
                              label=logpath,
                              actiontype=opt.actiontype, statetype='image3c')  # 适配funnyworld_v5
         s = env.reset()
-
         if opt.net != '':
             cnnmodel = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.IMAGENET1K_V1)
             cnnmodel.fc = nn.Sequential()
@@ -100,6 +103,7 @@ def train(opt):
         best_step = 0
         best_model = model
         for i in tqdm(range(1, opt.max_epochs + 1)):
+
             ep_reward = 0
             for j in range(task['maxstep']):
                 a = model.act(s)
@@ -111,10 +115,11 @@ def train(opt):
                         s_ = torch.FloatTensor(s_).unsqueeze(0).cuda()
                         s_ = cnnmodel(s_).cpu().numpy()
                 memory.push(s, a, r, s_, done)
+
                 s = s_
 
                 ep_reward += r
-                writer.add_scalar('reward', r, i * task['maxstep'] + j)
+                # writer.add_scalar('reward', r, i * task['maxstep'] + j)
 
                 # 4.3
                 if len(memory) >= memory._maxsize:
@@ -122,6 +127,7 @@ def train(opt):
                     writer.add_scalar('td_loss', loss, i * task['maxstep'] + j)
                     writer.add_scalar('q_loss', q_loss, i * task['maxstep'] + j)
                     VAR = max(VAR * 0.998, 0.000001)
+
                 if done:
                     env.reset()
             if ep_reward > best_epreward:
@@ -165,8 +171,6 @@ def train(opt):
                 s = s_
 
                 ep_reward += r
-                writer.add_scalar('reward', r, i * task['maxstep'] + j)
-
                 # 4.3
                 if len(memory) >= memory._maxsize:
                     loss, q_loss = model.learn(memory, opt.batchsize)
@@ -187,8 +191,9 @@ def train(opt):
     return logpath
 
 if __name__ == '__main__':
+
     #1.general env
-    opt = parse_opt(True, algorithm='RDDPG', epoch=200)
+    opt = parse_opt(True, algorithm='RDDPG', epoch=250, task='task21')
     train(opt)
 
 

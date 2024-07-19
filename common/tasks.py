@@ -218,9 +218,12 @@ tasks = {
 ,
     'task_test_model':{'step':[244,244,184,212],'maxstep':244, 'tasknum': 4, 'radionum': 2, 'map': 'dsm', 'basepos': basepos, 'cliposs':cliposs,'paths':[path1, path2, path3, path4_2]}
 ,
-    'task20': {'step': [244, 244, 184, 212], 'maxstep': 244, 'tasknum': 4, 'radionum': 4,
+    'task20': {'step': [244, 244, 184, 212], 'maxstep': 244, 'tasknum': 4, 'radionum': 2,
+                        'map': 'dsm5', 'basepos': basepos, 'cliposs': cliposs,
+                        'paths': [path1, path2, path3, path4_2]}
+,
+    'task21': {'step': [244, 244, 184, 212], 'maxstep': 244, 'tasknum': 4, 'radionum': 2,
                         'map': 'dsm', 'basepos': basepos, 'cliposs': cliposs,
                         'paths': [path1, path2, path3, path4_2]}
-
 }
 

@@ -11,12 +11,10 @@ import torchvision.models
 import torch.autograd
 
 
-'''
-seed = 1_episodes2000_steps99_var3
+
+seed = 1
 torch.manual_seed(seed)
 np.random.seed(seed)
-torch.set_default_dtype(torch.float)
-'''
 # 定义训练的设备
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 #device = torch.device('cpu')

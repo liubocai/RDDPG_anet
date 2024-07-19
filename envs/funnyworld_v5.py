@@ -31,8 +31,8 @@ class GroundEnv(gym.Env):
     def __init__(self, tasks={}, map='b', render_mode='none', label='', actiontype='serial', statetype='image3c'):
         #1.Environment
         mapfilepath = 'map/'+map+'.tif'
-        blabelfilepath = 'map/'+'building.tif'
-        tlabelfilepath = 'map/'+'vegetation.tif'
+        blabelfilepath = 'map/'+map+'_building.tif'
+        tlabelfilepath = 'map/'+'_vegetation.tif'
         mapgdal = gdal.Open(mapfilepath)
         buildlabelgdal = gdal.Open(blabelfilepath)
         treelabelgdal = gdal.Open(tlabelfilepath)
@@ -112,17 +112,22 @@ class GroundEnv(gym.Env):
 
         #
         else:
+            # posmask = self.map.copy()    [63,127,191]分别表示数据接收节点\通信中继节点\感知节点   #num2:最新的[127,255,1] num3:[1,1,1] num4:[1,255,1]
+            #onepixel
             posmask = np.zeros(shape=self.size[:2])
             posmask2 = np.zeros(shape=self.size[:2])
-            # posmask = self.map.copy()    [63,127,191]分别表示数据接收节点\通信中继节点\感知节点   #num2:最新的[127,255,1] num3:[1,1,1] num4:[1,255,1]
             posmask[int(self.basepos[0])][int(self.basepos[1])] = 127
             for radio in self.radioposs:
                 posmask2[int(radio[0])][int(radio[1])] = 255
                 posmask[int(radio[0])][int(radio[1])] = 255
             for cli in self.cliposs:
                 posmask[int(cli[0])][int(cli[1])] = 1
+
+            # #5×5
+            # posmask = self.genPosMaskBy33()
+
             if POS_D == 2:
-                # mask4 三图层，1dem，2建筑物标签，3实体的位置  最后采用的
+                # mask4 三图层，1dem，2标签，3实体的位置
                 s = np.concatenate((posmask[np.newaxis,:], self.dsm[np.newaxis,:],  self.mapmask[np.newaxis,:]), axis=0)  #
             if POS_D == 3:
                 # mask3 三图层，1dem，2实体的横坐标，3实体的高程
@@ -270,24 +275,37 @@ class GroundEnv(gym.Env):
         return net_speed2
 
     def genPosMaskBy33(self):
-        posmask = np.zeros(shape=self.size[:2], dtype=np.uint8)
-        # mask1:with 3x3 box shape to indicate entity
-        #1.base
-        for i in range(int(self.basepos[0])-1, int(self.basepos[0])+2):
-            for j in range(int(self.basepos[1])-1, int(self.basepos[1])+2):
-                posmask[i][j] = 150
-        #2.radio
-        for i in range(int(self._radio_position[1])-1, int(self._radio_position[1])+2):
-            posmask[self._radio_position[0]][i] = 50
-        for i in range(int(self._radio_position[0]) - 1, int(self._radio_position[0]) + 2):
-            posmask[i][self._radio_position[1]] = 50
-        #3.clients
+        posmask = np.zeros(shape=self.size[:2])
+        # posmask = self.map.copy()    [63,127,191]分别表示数据接收节点\通信中继节点\感知节点   #num2:最新的[127,255,1] num3:[1,1,1] num4:[1,255,1]
+        # posmask[int(self.basepos[0])][int(self.basepos[1])] = 127
+        posmask[int(self.basepos[0])-2: int(self.basepos[0])+3,int(self.basepos[1])-2: int(self.basepos[1])+3 ] = 127
+        for radio in self.radioposs:
+            posmask[np.clip(int(radio[0]) -1, 0, self.size[0]): np.clip(int(radio[0]) + 3, 0, self.size[0]),
+            np.clip(int(radio[1]) - 2, 0, self.size[1]): np.clip(int(radio[0]) + 3, 0, self.size[1])]  = 255
+
         for cli in self.cliposs:
-            posmask[int(cli[0])][int(cli[0])] = 100
-            posmask[int(cli[0])-1][int(cli[0])-1] = 100
-            posmask[int(cli[0])-1][int(cli[0])+1] = 100
-            posmask[int(cli[0])+1][int(cli[0])-1] = 100
-            posmask[int(cli[0])+1][int(cli[0])+1] = 100
+            posmask[int(cli[0]) - 2: np.clip(int(cli[0]) + 3, 0, self.size[0]),
+                    int(cli[1]) - 2: int(cli[1]) + 3] = 1
+
+        #
+        # posmask = np.zeros(shape=self.size[:2])
+        # # mask1:with 3x3 box shape to indicate entity
+        # #1.base
+        # for i in range(int(self.basepos[0])-1, int(self.basepos[0])+2):
+        #     for j in range(int(self.basepos[1])-1, int(self.basepos[1])+2):
+        #         posmask[i][j] = 127
+        # #2.radio
+        # for i in range(int(self._radio_position[1])-1, int(self._radio_position[1])+2):
+        #     posmask[self._radio_position[0]][i] = 50
+        # for i in range(int(self._radio_position[0]) - 1, int(self._radio_position[0]) + 2):
+        #     posmask[i][self._radio_position[1]] = 50
+        # #3.clients
+        # for cli in self.cliposs:
+        #     posmask[int(cli[0])][int(cli[0])] = 100
+        #     posmask[int(cli[0])-1][int(cli[0])-1] = 100
+        #     posmask[int(cli[0])-1][int(cli[0])+1] = 100
+        #     posmask[int(cli[0])+1][int(cli[0])-1] = 100
+        #     posmask[int(cli[0])+1][int(cli[0])+1] = 100
         return posmask
 
     def genPosMaskByOnePixel(self):
