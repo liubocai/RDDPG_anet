@@ -135,11 +135,8 @@ if __name__ == '__main__':
     opt = parse_opt(True, algorithm='DDPG', modelname='DDPG_1721269024final.pt'
                     , statetype='vector', task = 'task21')
     # opt = parse_opt(True, algorithm='withoutRadio')
-    logpath , s_all, a_all = test(opt)
-    np.save('s_dp', s_all)
-    np.save('a_dp', a_all)
-    print(s_all)
-    print(a_all)
+    logpath = test(opt)
+
 
 
 
