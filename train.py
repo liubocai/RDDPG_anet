@@ -55,7 +55,7 @@ def parse_opt(known=False, algorithm='RDDPG', epoch=250, lra=0.000001, statetype
 
 
 def train(opt):
-    np.random.seed(1)
+    np.random.seed(opt.seed)
 
     timestamp = str(int(time.time()))
     logpath = '_'.join([opt.algorithm, timestamp])
