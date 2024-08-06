@@ -1,6 +1,6 @@
 # RDDPG_anet
 
-The source code of "ResNet-DDPG Based Spatiotemporal Optimization for Communication-Navigation-Sensing Collaborated Emergency Monitoring".
+The source code of "Spatiotemporal Optimization for Communication-Navigation-Sensing Collaborated Emergency Monitoring".
 
 # Cite
 https://github.com/openai/baselines/blob/master/baselines/deepq/replay_buffer.py
